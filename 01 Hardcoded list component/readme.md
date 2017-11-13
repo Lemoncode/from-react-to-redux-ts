@@ -97,9 +97,9 @@ export const MemberTable = (props : Props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Foto</th>
+        <th>Photo</th>
         <th>Id</th>
-        <th>Nombre</th>
+        <th>Name</th>
       </tr>
     </thead>
     <tbody>
@@ -233,14 +233,14 @@ export class MemberListPage extends React.Component<Props, {}> {
 +         memberList: [
 +           {
 +             id: 1,
-+             name: 'pepe',
++             name: 'John',
 +             avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
 +           },
 +           {
 +             id: 2,
-+             name: 'Mr T',
++             name: 'Martin',
 +             avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
-+           },
++          },
 +         ]
 +       });
 +     }, 500);

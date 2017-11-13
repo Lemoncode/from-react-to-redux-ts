@@ -10,9 +10,9 @@ export const MemberTable = (props : Props) => (
   <table className="table">
     <thead>
       <tr>
-        <th>Foto</th>
+        <th>Photo</th>
         <th>Id</th>
-        <th>Nombre</th>
+        <th>Name</th>
       </tr>
     </thead>
     <tbody>
