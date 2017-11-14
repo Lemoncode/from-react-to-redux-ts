@@ -29,7 +29,6 @@ npm install
 
 - We will start by creating a suitable folder structure for our new API. 
 ```
-.
 └── api/
   └── model/
 		├── index.ts
