@@ -1,15 +1,15 @@
-# 01 Hardcoded list component
+# 02 Create API and expose it in Container
 
-In this sample we are going to change our page component to add a hardcoded list of members.
+In this sample we are going to add an Api to our application and integrate it into our Container component, replacing the previously added hardcoded data.
 
-We will use as start up point _00 Boilerplate_.
+We will use as start up point _01 Hardcoded list component.
 
 Summary steps:
 
-- Define the view model.
-- Create a component to show a table with a list of members.
-- Create a component to show a row that is part of the table component.
-- Modify the page component to show a table with hardcoded members.
+- Create a data model for the API.
+- Implement an API call that fetches data from the web and parses it into the previously defined data model.
+- Create an auxiliary mapper module to parse from the api data model to the view model used in the Container component tree.
+- Modify the container component to use the API calls and the subsequently returned data.
 
 # Prerequisites
 
@@ -19,205 +19,136 @@ Install [Node.js and npm](https://nodejs.org/en/) if they are not already instal
 
 ## Steps to build it
 
-- Copy the content of the `00 Boilerplate` folder to an empty folder for the sample.
+- Copy the content of the `01 Hardcoded list component` folder to an empty folder for the sample.
 
 - Install the npm packages described in the `package.json` and verify that it works:
 
 ```
 npm install
 ```
-  
-- Let's define our view model. As we are later going to obtain a list of GitHub members, we specify that a member will have an id, a name and an avatar URL. Therefore, our _viewModel.ts_ file will contain:
+
+- We will start by creating a suitable folder structure for our new API. 
+```
+└── api/
+  └── model/
+		├── index.ts
+		├── member.ts
+	├── memberApi.ts
+	└── index.ts
+```
+
+- First, we add an `api subfolder` inside `src`. Then, inside `src/api` we create a new subfolder named `src/api/model`
+
+- Let's start by defining the data model used in our API. Our data source will be a list of GitHub members. As we know from the previous case, we want to be able to display the id, name and profile image (represented as an Url) inside our members page. Thus, the data that we really care to retrieve should hold 1 number property for the id, and 2 string properties for the user login name and avatar image Url respectively . Consequently, we will create a `member.ts` file inside `src/api/model` with the content below:
 
 ```javascript
 export interface MemberEntity {
-  id : number;
-  name : string;
-  avatarUrl : string;
+    login: string;
+    id: number;
+    avatar_url: string;
 }
 ```
 
-- Now, we are going to create a folder named _components_, under _members_ folder.
+- And since we want to be able to access this interface later from both the API call itself (to properly format the data fetched) and from our auxiliary mapper modulee (to ensure that we can parse from this interface to the one used internally in our view model), we will also define a barrel `index.ts` file for our `src/api/model` folder, as follows:
 
-- Then, we will add some files for the components that we need to show a list of members in our page. Under _components_ folder, create _index.ts_, _memberRow.tsx_ and _memberTable.tsx_.
+´´´javascript
+export {MemberEntity} from './member';
+´´´
 
-- The _src_ folder structure should be like the following one:
-
-```
-.
-└── src/
-    └── pages/
-		└── members/
-				├── components/
-					├── index.ts
-					├── memberRow.tsx
-					└── memberTable.tsx
-				├── index.ts
-				├── viewModel.ts
-				├── container.tsx
-				└── page.tsx
-	└── index.html
-	└── main.tsx
-```
-
-- Let's create the component that will show a member's details in a row.
-    - The properties of our component will include just a member.
-    - Our component will return the HTML code that renders the member received in the properties argument.
-    - Therefore, we need to add the following code to our _memberRow.tsx_ file:
+- Next we can start working on our `memberApi.ts` file. We will import our data model from `./model` barrel index file. We will also need to define some constants to store the root Url for our data source service, and the specific endpoint we want to call to retrieve the list of members. We can do by adding the following lines.
 
 ```javascript
-import * as React from 'react';
-import { MemberEntity } from '../viewModel';
+import { MemberEntity } from './model';
 
-interface Props {
-  member : MemberEntity;
+const baseRoot = 'https://api.github.com/orgs/lemoncode';
+const membersURL = `${baseRoot}/members`
+```
+
+- We want to define a get/fetch REST call to retrieve our list of members from the server. In order to do this, we must send an aynchronous call to the server, using a Promise to store said data once it is available in our app. Thus, we define a `fetchMemberList` method that performs the aformentioned 'fetch' operation and parses the corresponding data, as follows: 
+
+```javascript
+export const fetchMemberList = () : Promise<MemberEntity[]> => {
+
+  return fetch(membersURL)
+            .then(checkStatus)
+            .then(parseJSON)
+            .then(resolveMembers)
+
+
+}
+```
+
+- As noted in the code above, we will first fetch the results from our Url endpoint, and then we will first check that the data could be retrieved successfully, parse said data into JSON, and finally resolve said data according to the API data model we have defined.
+
+- Regarding thee `checkStatus` method, we will simply forward the response if we got an OK reply from the Backend. Otherwise, we will throw an error according to the status received. Notice that we do not need to wrap the returned value inside a Promise (for example, using `Promise.resolve()`), as the `then` call already returns a promise resolved with the data returned. Thus, we can chain then properly without incurring any typing errors on behalf of Typescript.
+
+```javascript
+const checkStatus = (response : Response) : Response => {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    let error = new Error(response.statusText);
+    throw error;
+  }
+}
+```
+
+- If the members data was retrieved succesfully, we then take the corresponding JSON content.
+
+```javascript
+const parseJSON = (response : Response) : any => {
+  return response.json();
 }
 
-export const MemberRow = (props : Props) => (
-  <tr>
-    <td><img src={props.member.avatarUrl} style={{ width: '200px' }} /></td>
-    <td>{props.member.id}</td>
-    <td>{props.member.name}</td>
-  </tr>
-);
 ```
 
-- Now, let's create the component that will show the list of members. To do so, we need to import the MemberRow component into _memberTable.tsx_ and render it accordingly. In this case, the properties will be an array of members:
+- And finally, for each object in our data list (i.e. for each member in our members list), we will retrieve the three values we are interested in (using destructuring to make the code more concise), build a new object with these 3 values (using the short syntax for property assignment, i.e. `{id, login, avatar_url} equals {id:id, login:login, avatar_url:avatar_url})`), and finally we 'cast' our object into our api data model, as we do meet the required interface (types match). 
 
 ```javascript
-import * as React from 'react';
-import { MemberEntity } from '../viewModel';
-import { MemberRow } from './memberRow';
+const resolveMembers = (data : any) : MemberEntity[] => {
+  const members = data.map(
+    ({id, login, avatar_url,}) => ({ id, login, avatar_url, } as MemberEntity)
+  );
 
-interface Props {
-  memberList : MemberEntity[];
+  return members;
 }
-
-export const MemberTable = (props : Props) => (
-  <table className="table">
-    <thead>
-      <tr>
-        <th>Picture</th>
-        <th>Id</th>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        props.memberList.map(
-          (member) => <MemberRow
-            key={member.id}
-            member={member}
-          />
-        )
-      }
-    </tbody>
-  </table>
-);
 ```
 
-- Now, let's use barrel and export MemberTable in _./src/pages/members/components/index.ts_:
+
+- We have finished our API, now we need to do some changes on our container file and folder to properly expose the API to it.
+
+- First, we will create a new file inside our `src/pages/members` folder called `mapper.ts`. This will be an auxiliary file that parses between our api data model and the view model used in our components. The code we need to add would be the following:
 
 ```javascript
-export { MemberTable } from './memberTable';
+import * as apiModel from '../../api/model';
+import * as vm from './viewModel';
+
+const mapMemberFromModelToVm = (member: apiModel.MemberEntity) : vm.MemberEntity => (
+    {
+        id: member.id,
+        avatarUrl: member.avatar_url,
+        name: member.login,
+    }
+)
+
+export const mapMemberListFromModelToVm = (memberList: apiModel.MemberEntity[]) : vm.MemberEntity[]  => (
+    memberList.map(mapMemberFromModelToVm)
+)
 ```
 
-- It's the moment to include our MemberTable in our _page.tsx_ component.
-    - We need to import MemberEntity.
-    - We need to define the properties: it will be the list of members.
-    - We need to convert the component from a function into a class.
+- The method `mapMemberListFromModelToVm` is the one that actually maps the members list retrieved from the Backend into the data model used in our components. Internally, it will call `mapMemberFromModelToVm` to process and parse each member object inside the list. We do not need to use this parsing method outside of our container, so we will not be adding any methods from `mapper.ts` into the `index.ts` file of our container folder.
 
-```diff
-  import * as React from 'react';
-+ import { MemberEntity } from './viewModel';
-+ import { MemberTable } from './components';
-
-+ interface Props {
-+   memberList: MemberEntity[];
-+   fetchMemberList: () => void;
-+ }
-
-- export const MemberListPage = () => (
--   <h1>Hello from member list page</h1>
-- );
-
-+ export class MemberListPage extends React.Component<Props, {}> {
-+ 
-+   render() {
-+     return (
-+       <MemberTable
-+         memberList={this.props.memberList}
-+       />
-+     );
-+   }
-+ }
-
-```
-
-- Now, we have to modify _container.tsx_.
-    - We need to import MemberEntity.
-    - We need to define the State: it will be the list of members.
-    - We need to convert the component from a function into a class.
+- The last steps remaining will revolve around changing the code of our `container.tsx` component to use the new API endpoint alongside our mapper's parsing method. First, we will start by adding the new dependencies to our file header.
 
 ```diff
   import * as React from 'react';
   import { MemberListPage } from './page';
-+ import { MemberEntity } from './viewModel';
-
-+ interface State {
-+   memberList : MemberEntity[];
-+ }
-
-- export class MemberListContainer extends React.Component<{}, {}> {
--   render() {
--     return (
--       <MemberListPage/>
--     );
--   }
-- }
-
-+ export class MemberListContainer extends React.Component<{}, State> {
-+ 
-+   constructor(props) {
-+     super(props);
-+     this.state = { memberList: [] };
-+   }
-+   
-+   render() {
-+     return (
-+       <MemberListPage
-+         memberList={this.state.memberList}
-+       />
-+     );
-+   }
-+ }
+  import { MemberEntity } from './viewModel';
++ import { fetchMemberList } from '../../api';
++ import { mapMemberListFromModelToVm } from './mapper';
 ```
 
-- At this point, there is a piece missing: when our page is created, we need a call to get the list of members whenever it is ready. We will do it in _page.tsx_ using the method _componentDidMount()_.
-
-```diff
-  interface Props {
-    memberList: MemberEntity[];
-+   fetchMemberList: () => void;
-  }
-
-export class MemberListPage extends React.Component<Props, {}> {
-
-+   componentDidMount() {
-+     this.props.fetchMemberList();
-+   }
-
-    render() {
-      return (
-        <MemberTable
-          memberList={this.props.memberList}
-        />
-      );
-    }
-  }
-```
-
-- Now, what we need to do is to simulate how to get the list of members. As it should normally be an asynchronous call, we will use a timeout to return a list of hardcoded members in _container.tsx_.
+- And finally, we will replace the hardcoded block of the `fetchMembers` method to use instead a call to our `fetchMemberList` API endpoint
 
 ```diff
   export class MemberListContainer extends React.Component<{}, State> {
@@ -227,37 +158,33 @@ export class MemberListPage extends React.Component<Props, {}> {
       this.state = { memberList: [] };
     }
 
-+   fetchMembers = () => {
-+     setTimeout(() => {
+    fetchMembers = () => {
+-     setTimeout(() => {
+-       this.setState({
+-         memberList: [
+-           {
+-             id: 1,
+-             name: 'John',
+-             avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
+-           },
+-           {
+-             id: 2,
+-             name: 'Martin',
+-             avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
+-          },
+-         ]
+-       });
+-     }, 500);
++     fetchMemberList().then((memberList) => {
 +       this.setState({
-+         memberList: [
-+           {
-+             id: 1,
-+             name: 'John',
-+             avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
-+           },
-+           {
-+             id: 2,
-+             name: 'Martin',
-+             avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
-+          },
-+         ]
++         memberList: mapMemberListFromModelToVm(memberList),
 +       });
-+     }, 500);
-+   }
-
-    render() {
-      return (
-        <MemberListPage
-          memberList={this.state.memberList}
-+         fetchMemberList={this.fetchMembers}
-        />
-      );
++     });
     }
-  }
+
 ```
 
-Now if you execute `npm start` and go to `http://localhost:8080/`, you will see the list of hardcoded members.
+Now if you execute `npm start` and go to `http://localhost:8080/`, you will see the list of members retrieved from our Url.
  
 # About Lemoncode
 

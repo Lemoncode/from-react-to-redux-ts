@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { MemberListPage } from './page';
 import { MemberEntity } from './viewModel';
+import { fetchMemberList } from '../../api';
+import { mapMemberListFromModelToVm } from './mapper';
 
 interface State {
   memberList : MemberEntity[];
@@ -14,22 +16,11 @@ export class MemberListContainer extends React.Component<{}, State> {
   }
 
   fetchMembers = () => {
-    setTimeout(() => {
+    fetchMemberList().then((memberList) => {
       this.setState({
-        memberList: [
-          {
-            id: 1,
-            name: 'John',
-            avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
-          },
-          {
-            id: 2,
-            name: 'Martin',
-            avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
-          },
-        ]
+        memberList: mapMemberListFromModelToVm(memberList),
       });
-    }, 500);
+    });
   }
 
   render() {
