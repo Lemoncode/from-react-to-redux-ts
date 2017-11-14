@@ -27,17 +27,15 @@ Install [Node.js and npm](https://nodejs.org/en/) if they are not already instal
 npm install
 ```
 
-- 
-
 - We will start by creating a suitable folder structure for our new API. 
 ```
 .
 └── api/
-    └── model/
-		  	├── index.ts
-		    ├── member.ts
-		├── memberApi.ts
-	  └── index.ts
+  └── model/
+		├── index.ts
+		├── member.ts
+	├── memberApi.ts
+	└── index.ts
 ```
 
 - First, we add an `api subfolder` inside `src`. Then, inside `src/api` we create a new subfolder named `src/api/model`
