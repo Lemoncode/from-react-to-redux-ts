@@ -1,34 +1,23 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
+import { State } from '../../reducers';
 import { MemberListPage } from './page';
 import { MemberEntity } from './viewModel';
-import { fetchMemberList } from '../../api';
+import * as memberApi from '../../api';
 import { mapMemberListFromModelToVm } from './mapper';
+import { fetchMemberListRequestStart } from '../../actions';
 
-interface State {
-  memberList : MemberEntity[];
-}
+const mapStateToProps = (state: State) => ({
+  // This mapping is necessary because we have two different ModelEntity interfaces with the same name.
+  // This could be improved using selectors.
+  memberList: mapMemberListFromModelToVm(state.memberListReducer.memberList),
+});
 
-export class MemberListContainer extends React.Component<{}, State> {
+const mapDispatchToProps = (dispatch) => ({
+  fetchMemberList: () => { dispatch(fetchMemberListRequestStart()) }
+});
 
-  constructor(props) {
-    super(props);
-    this.state = { memberList: [] };
-  }
-
-  fetchMembers = () => {
-    fetchMemberList().then((memberList) => {
-      this.setState({
-        memberList: mapMemberListFromModelToVm(memberList),
-      });
-    });
-  }
-
-  render() {
-    return (
-      <MemberListPage
-        memberList={this.state.memberList}
-        fetchMemberList={this.fetchMembers}
-      />
-    );
-  }
-}
+export const MemberListContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(MemberListPage);

@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/react": "^16.0.22",
     "@types/react-dom": "^16.0.3",
+    "@types/react-redux": "^5.0.13",
     "awesome-typescript-loader": "^3.3.0",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -28,6 +29,9 @@
   "dependencies": {
     "bootstrap": "^3.3.7",
     "react": "^16.1.0",
-    "react-dom": "^16.1.0"
+    "react-dom": "^16.1.0",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0"
   }
 }
