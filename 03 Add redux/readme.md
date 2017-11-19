@@ -36,13 +36,13 @@ npm install
 npm install redux react-redux --save
 ```
 
-- Let's install types for react-redux as well:
+- Let's install the type definitions for react-redux as well:
 
 ```
 npm install @types/react-redux --save-dev
 ```
 
-- We will also need the middleware redux-thunk for the asynchronous call to the API.
+- We will also need the middleware redux-thunk to handle the asynchronous call to the Rest API.
 
 ```
 npm install redux-thunk --save
@@ -97,7 +97,7 @@ npm install redux-thunk --save
   import { actionsDefs } from '../const';
   import { fetchMemberList } from '../api'; 
   ```
-  - As our action is an asynchronous call to an API, we need two functions: one to start the request to the server and a callback once the request is completed. The first function will be named _fetchMemberListRequestStart_ and it is the one that we will export. This function will call _fetchMemberList()_ from our API, but it returns a promise, which is not a pure function. This means that we cannot return it directly to the reducer. A dispatcher is the solution to this problem, it does the magic that allows to insert the result of actions into the reducers wheel. Precisely, the second function that we need is the one provided to the dispatcher. It returns the result of the action, which is the list of members, once the request to the API is completed:
+  - As our action is an asynchronous call to an API, we need two functions: one to start the request to the server and a callback once the request is completed. The first function will be named _fetchMemberListRequestStart_ and it is the one that we will export. This function will call _fetchMemberList()_ from our API, but it returns a promise, which is not a pure function. This means that we cannot return it directly to the reducer. A dispatcher is the solution to this problem. The access to the dispatcher within the action is provided by redux-thunk middleware. The dispatcher does the magic that allows to insert the result of actions into the reducers wheel. Precisely, the second function that we need is the one provided to the dispatcher. It returns the result of the action, which is the list of members, once the request to the API is completed:
 
   ```diff
   import { MemberEntity } from '../api/model';
@@ -138,10 +138,13 @@ npm install redux-thunk --save
   import { MemberEntity } from '../api/model';
   import { actionsDefs } from '../const';
   
+  // We create an object showing how spread operator (...) works because it helps keeping the object inmutable,
+  // but we could have set the state directly to an array of members.
   export interface MemberListState {
     memberList : MemberEntity[];
   }
   
+  // The interface BaseAction could be promoted to a common file and be reused in other reducers
   interface BaseAction {
     type : string;
     payload : any;
@@ -153,10 +156,13 @@ npm install redux-thunk --save
   import { MemberEntity } from '../api/model';
   import { actionsDefs } from '../const';
   
+  // We create an object showing how spread operator (...) works because it helps keeping the object inmutable,
+  // but we could have set the state directly to an array of members.
   export interface MemberListState {
     memberList : MemberEntity[];
   }
   
+  // The interface BaseAction could be promoted to a common file and be reused in other reducers
   interface BaseAction {
     type : string;
     payload : any;
@@ -167,16 +173,19 @@ npm install redux-thunk --save
   + });
   ```
 
-  - The reducer is a function that receives a state and an action and returns a new state. Therefore, in our case, we need to check that the action type is correct and return the new state, which is a new object with the member list received from the API:
+  - The reducer is a function that receives a state and an action and returns a new state. Therefore, in our case, we need to check that the action type is correct and return the new state. As the state is inmutable, we create a new object with the member list received from the API:
 
   ```diff
   import { MemberEntity } from '../api/model';
   import { actionsDefs } from '../const';
   
+  // We create an object showing how spread operator (...) works because it helps keeping the object inmutable,
+  // but we could have set the state directly to an array of members. 
   export interface MemberListState {
     memberList : MemberEntity[];
   }
   
+  // The interface BaseAction could be promoted to a common file and be reused in other reducers
   interface BaseAction {
     type : string;
     payload : any;
@@ -195,9 +204,10 @@ npm install redux-thunk --save
   + 
   +   return state;
   + }
-  +
-  + // We use destructuring to create the new state. We create a new object and replace memberList by the one received as a parameter (action.payload)
+  + 
   + const handleFetchMembersCompleted = (state : MemberListState, memberList : MemberEntity[]) : MemberListState => ({
+  + // We could have simply returned the list of members, but we are returning an object with the list of members 
+  + // using spread operator to show how it helps keeping objects inmutable
   +   ...state,
   +   memberList,
   + });
