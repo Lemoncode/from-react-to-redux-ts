@@ -5,8 +5,9 @@ import { fetchMemberList } from '../../api';
 import { mapMemberListFromModelToVm } from './mapper';
 
 interface State {
-  memberList : MemberEntity[];
+  memberList: MemberEntity[];
 }
+
 
 export class MemberListContainer extends React.Component<{}, State> {
 

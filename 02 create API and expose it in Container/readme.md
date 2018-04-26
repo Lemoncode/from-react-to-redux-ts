@@ -41,6 +41,8 @@ npm install
 
 - Let's start by defining the data model used in our API. Our data source will be a list of GitHub members. As we know from the previous case, we want to be able to display the id, name and profile image (represented as an Url) inside our members page. Thus, the data that we really care to retrieve should hold 1 number property for the id, and 2 string properties for the user login name and avatar image Url respectively . Consequently, we will create a `member.ts` file inside `src/api/model` with the content below:
 
+_./src/api/model/member.ts_
+
 ```javascript
 export interface MemberEntity {
     login: string;
@@ -51,11 +53,15 @@ export interface MemberEntity {
 
 - And since we want to be able to access this interface later from both the API call itself (to properly format the data fetched) and from our auxiliary mapper modulee (to ensure that we can parse from this interface to the one used internally in our view model), we will also define a barrel `index.ts` file for our `src/api/model` folder, as follows:
 
+_./src/api/model/index.ts_
+
 ´´´javascript
 export {MemberEntity} from './member';
 ´´´
 
 - Next we can start working on our `memberApi.ts` file. We will import our data model from `./model` barrel index file. We will also need to define some constants to store the root Url for our data source service, and the specific endpoint we want to call to retrieve the list of members. We can do by adding the following lines.
+
+_./src/api/memberApi.ts_
 
 ```javascript
 import { MemberEntity } from './model';
@@ -65,6 +71,8 @@ const membersURL = `${baseRoot}/members`
 ```
 
 - We want to define a get/fetch REST call to retrieve our list of members from the server. In order to do this, we must send an aynchronous call to the server, using a Promise to store said data once it is available in our app. Thus, we define a `fetchMemberList` method that performs the aformentioned 'fetch' operation and parses the corresponding data, as follows: 
+
+_./src/api/memberApi.ts_
 
 ```javascript
 export const fetchMemberList = () : Promise<MemberEntity[]> => {
@@ -102,6 +110,14 @@ const parseJSON = (response : Response) : any => {
 
 ```
 
+- Let's create an index barrel to export the _fetchMemberList_ function.
+
+_./src/api/index.ts_
+
+```typescript
+export {fetchMemberList} from './memberApi'
+```
+
 - And finally, for each object in our data list (i.e. for each member in our members list), we will retrieve the three values we are interested in (using destructuring to make the code more concise), build a new object with these 3 values (using the short syntax for property assignment, i.e. `{id, login, avatar_url} equals {id:id, login:login, avatar_url:avatar_url})`), and finally we 'cast' our object into our api data model, as we do meet the required interface (types match). 
 
 ```javascript
@@ -114,10 +130,11 @@ const resolveMembers = (data : any) : MemberEntity[] => {
 }
 ```
 
-
 - We have finished our API, now we need to do some changes on our container file and folder to properly expose the API to it.
 
 - First, we will create a new file inside our `src/pages/members` folder called `mapper.ts`. This will be an auxiliary file that parses between our api data model and the view model used in our components. The code we need to add would be the following:
+
+_./src/page/members/mapper.ts_
 
 ```javascript
 import * as apiModel from '../../api/model';
@@ -139,6 +156,8 @@ export const mapMemberListFromModelToVm = (memberList: apiModel.MemberEntity[]) 
 - The method `mapMemberListFromModelToVm` is the one that actually maps the members list retrieved from the Backend into the data model used in our components. Internally, it will call `mapMemberFromModelToVm` to process and parse each member object inside the list. We do not need to use this parsing method outside of our container, so we will not be adding any methods from `mapper.ts` into the `index.ts` file of our container folder.
 
 - The last steps remaining will revolve around changing the code of our `container.tsx` component to use the new API endpoint alongside our mapper's parsing method. First, we will start by adding the new dependencies to our file header.
+
+_./src/pages/members/container.tsx_
 
 ```diff
   import * as React from 'react';

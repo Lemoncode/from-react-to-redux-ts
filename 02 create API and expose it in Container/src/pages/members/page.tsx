@@ -7,6 +7,7 @@ interface Props {
   fetchMemberList: () => void;
 }
 
+
 export class MemberListPage extends React.Component<Props, {}> {
 
   componentDidMount() {
