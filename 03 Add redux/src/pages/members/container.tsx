@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { State } from '../../reducers';
 import { MemberListPage } from './page';
 import { MemberEntity } from './viewModel';
-import * as memberApi from '../../api';
 import { mapMemberListFromModelToVm } from './mapper';
 import { fetchMemberListRequestStart } from '../../actions';
 
@@ -21,3 +20,4 @@ export const MemberListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(MemberListPage);
+

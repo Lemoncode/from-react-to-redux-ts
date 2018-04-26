@@ -1,1 +1,1 @@
-export {fetchMemberList} from './memberApi';
+export {fetchMemberList} from './memberApi'
