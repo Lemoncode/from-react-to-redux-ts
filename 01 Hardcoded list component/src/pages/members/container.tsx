@@ -3,8 +3,9 @@ import { MemberListPage } from './page';
 import { MemberEntity } from './viewModel';
 
 interface State {
-  memberList : MemberEntity[];
+  memberList: MemberEntity[];
 }
+
 
 export class MemberListContainer extends React.Component<{}, State> {
 

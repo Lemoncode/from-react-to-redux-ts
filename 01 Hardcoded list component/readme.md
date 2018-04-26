@@ -29,6 +29,8 @@ npm install
   
 - Let's define our view model. As we are later going to obtain a list of GitHub members, we specify that a member will have an id, a name and an avatar URL. Therefore, our _viewModel.ts_ file will contain:
 
+_./src/pages/members/viewModel.ts_
+
 ```javascript
 export interface MemberEntity {
   id : number;
@@ -65,6 +67,8 @@ export interface MemberEntity {
     - Our component will return the HTML code that renders the member received in the properties argument.
     - Therefore, we need to add the following code to our _memberRow.tsx_ file:
 
+_./src/pages/members/components/memberRow.tsx_
+
 ```javascript
 import * as React from 'react';
 import { MemberEntity } from '../viewModel';
@@ -83,6 +87,8 @@ export const MemberRow = (props : Props) => (
 ```
 
 - Now, let's create the component that will show the list of members. To do so, we need to import the MemberRow component into _memberTable.tsx_ and render it accordingly. In this case, the properties will be an array of members:
+
+_./src/pages/members/components/memberTable.tsx_
 
 ```javascript
 import * as React from 'react';
@@ -118,6 +124,8 @@ export const MemberTable = (props : Props) => (
 
 - Now, let's use barrel and export MemberTable in _./src/pages/members/components/index.ts_:
 
+_./src/pages/members/components/index.ts
+
 ```javascript
 export { MemberTable } from './memberTable';
 ```
@@ -126,6 +134,8 @@ export { MemberTable } from './memberTable';
     - We need to import MemberEntity.
     - We need to define the properties: it will be the list of members.
     - We need to convert the component from a function into a class.
+
+_./src/pages/members/page.tsx_
 
 ```diff
   import * as React from 'react';
@@ -143,6 +153,10 @@ export { MemberTable } from './memberTable';
 
 + export class MemberListPage extends React.Component<Props, {}> {
 + 
++   componentDidMount() {
++     this.props.fetchMemberList();
++   }
++
 +   render() {
 +     return (
 +       <MemberTable
@@ -158,6 +172,8 @@ export { MemberTable } from './memberTable';
     - We need to import MemberEntity.
     - We need to define the State: it will be the list of members.
     - We need to convert the component from a function into a class.
+
+_./src/pages/members/container.tsx_
 
 ```diff
   import * as React from 'react';
@@ -191,30 +207,6 @@ export { MemberTable } from './memberTable';
 +     );
 +   }
 + }
-```
-
-- At this point, there is a piece missing: when our page is created, we need a call to get the list of members whenever it is ready. We will do it in _page.tsx_ using the method _componentDidMount()_.
-
-```diff
-  interface Props {
-    memberList: MemberEntity[];
-+   fetchMemberList: () => void;
-  }
-
-export class MemberListPage extends React.Component<Props, {}> {
-
-+   componentDidMount() {
-+     this.props.fetchMemberList();
-+   }
-
-    render() {
-      return (
-        <MemberTable
-          memberList={this.props.memberList}
-        />
-      );
-    }
-  }
 ```
 
 - Now, what we need to do is to simulate how to get the list of members. As it should normally be an asynchronous call, we will use a timeout to return a list of hardcoded members in _container.tsx_.
