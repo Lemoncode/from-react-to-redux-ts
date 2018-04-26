@@ -14,7 +14,7 @@ Summary steps:
 
 Install [Node.js and npm](https://nodejs.org/en/) if they are not already installed on your computer.
 
-> Verify that you are running at least node v6.x.x and npm 5.x.x by running `node -v` and `npm -v` in a terminal/console window. Older versions may produce errors.
+> Verify that you are running at least node v8.x.x and npm 5.x.x by running `node -v` and `npm -v` in a terminal/console window. Older versions may produce errors.
 
 ## Steps to build it
 
@@ -43,6 +43,8 @@ npm install reselect --save
 
 - A selector is a function that receives a state and returns the part of the state that we are interested in. Let's add a selector in _selectors.ts_ to get the list of members given the state:
 
+_./reducers/selectors.ts_
+
 ```javascript
 import { State } from './index'; // This is not a good idea because it could create a circular reference, but we'll leave it like that for now
 
@@ -54,6 +56,8 @@ export const getMemberListReducer =
 - This is interesting in case the app grows because we could need to relocate our reducer and the selector provides a single entry point to _memberListReducer_.
 
 - Now, let's add another selector to get the list of members from _memberListReducer_:
+
+_./reducers/selectors.ts_
 
 ```diff
 import { State } from './index'; // This is not a good idea because it could create a circular reference, but we'll leave it like that for now
@@ -129,6 +133,8 @@ const mapStateToProps = (state: State) => ({
 
 - It is in _selectors.ts_ where we will call __mapMemberListFromModelToVm_. We create a selector that will receive a member list and will return its mapping:
 
+_./src/pages/members/selectors.ts_
+
 ```javascript
 import { createSelector } from 'reselect';
 import { getMemberList } from '../../reducers/selectors';
@@ -142,9 +148,10 @@ export const getMemberListVM = createSelector(
 
 - Let's use this selector in _container.tsx_:
 
+_./src/pages/members/container.tsx_
+
 ```diff
 - import { MemberEntity } from './viewModel';
-- import * as memberApi from '../../api';
 - import { mapMemberListFromModelToVm } from './mapper';
 - import { getMemberList } from '../../reducers/selectors';
 + import { getMemberListVM } from './selectors';

@@ -6,6 +6,8 @@ import { fetchMemberListRequestStart } from '../../actions';
 import { getMemberListVM } from './selectors';
 
 const mapStateToProps = (state: State) => ({
+  // This mapping is necessary because we have two different ModelEntity interfaces with the same name.
+  // This could be improved using selectors.
   memberList: getMemberListVM(state), 
 });
 
@@ -17,3 +19,4 @@ export const MemberListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(MemberListPage);
+

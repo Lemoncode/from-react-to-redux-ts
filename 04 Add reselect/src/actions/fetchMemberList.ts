@@ -10,7 +10,7 @@ export const fetchMemberListRequestStart = () => (dispatcher) => {
   });
 }
 
-const fetchMemberListCompleted = (memberList : MemberEntity[]) => ({
+const fetchMemberListCompleted = (memberList: MemberEntity[]) => ({
   type: actionsDefs.FETCH_MEMBERS_COMPLETED,
   payload: memberList,
 });
