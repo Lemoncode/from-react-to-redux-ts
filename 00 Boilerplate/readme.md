@@ -37,7 +37,7 @@ npm init
 - Install **webpack** locally, as a development dependency (the reason to install it locally and not globally is to be easy to set up, e.g. can be launched on a clean machine without having to install anything globally but nodejs).
 
 ````
-npm install webpack --save-dev
+npm install webpack webpack-cli --save-dev
 ````
 - Install **webpack-dev-server** locally, as a development dependency (the reason to install it locally and not globally is to be easy to set up, e.g. can be launched on a clean machine without having to install anything globally but nodejs).
 
@@ -54,7 +54,7 @@ npm install typescript --save-dev
 - Let's install a list of plugins and loaders that will add powers to our webpack configuration (handling css, typescript...).
 
 ```
-npm install css-loader style-loader file-loader url-loader html-webpack-plugin awesome-typescript-loader extract-text-webpack-plugin --save-dev
+npm install css-loader style-loader file-loader url-loader html-webpack-plugin awesome-typescript-loader mini-css-extract-plugin --save-dev
 ```
 
 - We also need to create a _tsconfig.json_ file in the root folder of our project:
@@ -122,38 +122,49 @@ npm install @types/react @types/react-dom --save-dev
 
 ```json
 {
-  "name": "from-react-to-redux-ts",
+  "name": "formreacttoredux",
   "version": "1.0.0",
-  "description": "In this sample we are going to set up the basic plumbing to build our project",
+  "description": "In this sample we are going to set up the basic plumbing to \"build\" our project and launch it in a dev server.",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --inline",
-    "build": "webpack"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Lemoncode and Front End Master Students",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@types/react": "^16.0.22",
-    "@types/react-dom": "^16.0.3",
-    "awesome-typescript-loader": "^3.3.0",
+    "@types/react": "^16.3.12",
+    "@types/react-dom": "^16.0.5",
+    "awesome-typescript-loader": "^5.0.0",
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "css-loader": "^0.28.7",
-    "extract-text-webpack-plugin": "^3.0.2",
-    "file-loader": "^1.1.5",
-    "html-webpack-plugin": "^2.30.1",
-    "style-loader": "^0.19.0",
-    "typescript": "^2.6.1",
-    "url-loader": "^0.6.2",
-    "webpack": "^3.8.1",
-    "webpack-dev-server": "^2.9.4"
+    "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.4.0",
+    "style-loader": "^0.21.0",
+    "typescript": "^2.8.3",
+    "url-loader": "^1.0.1",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.15",
+    "webpack-dev-server": "^3.1.3"
   },
   "dependencies": {
-    "bootstrap": "^3.3.7",
-    "react": "^16.1.0",
-    "react-dom": "^16.1.0"
+    "bootstrap": "^4.1.0",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2"
   }
 }
+```
+
+- Let's add a script to run webpack-dev-server
+
+_./package.json_
+
+```diff
+"scripts": {
++  "start": "webpack-dev-server  --mode development --inline --hot --open",
+  "test": "echo \"Error: no test specified\" && exit 1"    
+},
 ```
 
 - Now it's time to create a basic _webpack.config.js_ file, this configuration will include plumbing for:
@@ -165,94 +176,70 @@ npm install @types/react @types/react-dom --save-dev
 Create a file named `webpack.config.js` in the root directory with the following content:
 
 ```javascript
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+let path = require('path');
+let HtmlWebpackPlugin = require('html-webpack-plugin');
+let MiniCssExtractPlugin = require('mini-css-extract-plugin');
+let webpack = require('webpack');
 
-var basePath = __dirname;
+let basePath = __dirname;
 
 module.exports = {
   context: path.join(basePath, "src"),
   resolve: {
-      extensions: ['.js', '.ts', '.tsx']
+    extensions: ['.js', '.ts', '.tsx']
   },
-
   entry: [
-    './main.tsx',
+    './main.ts',
     '../node_modules/bootstrap/dist/css/bootstrap.css'
   ],
   output: {
     path: path.join(basePath, 'dist'),
     filename: 'bundle.js'
   },
-  
   devtool: 'source-map',
-
   devServer: {
-       contentBase: './dist', // Content base
-       inline: true, // Enable watch and live reload
-       host: 'localhost',
-       port: 8080,
-       stats: 'errors-only'
+    contentBase: './dist', // Content base
+    inline: true, // Enable watch and live reload
+    host: 'localhost',
+    port: 8080,
+    stats: 'errors-only'
   },
-
   module: {
     rules: [
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'awesome-typescript-loader',
-          options: {
-            useBabel: true,
-          },
+        loader: 'awesome-typescript-loader',
+        options: {
+          useBabel: true,
         },
       },
       {
-        test: /\.css$/,
-        include: /node_modules/,
-        loader: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: {
-            loader: 'css-loader',
-          },
-        }),
-      },
-      // Loading glyphicons => https://github.com/gowravshekar/bootstrap-webpack
-      // Using here url-loader and file-loader
-      {
-        test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
-      },  
-      {
-        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/octet-stream'
+        test: /\.css$/,        
+        use: [MiniCssExtractPlugin.loader, "css-loader"]
       },
       {
-        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'url-loader?limit=10000&mimetype=image/svg+xml'
-      },                
-      {
-        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader'
-      },      
-    ]
+        test: /\.(png|jpg|gif|svg)$/,
+        loader: 'file-loader',
+        options: {
+          name: 'assets/img/[name].[ext]?[hash]'
+        }
+      },
+    ],
   },
   plugins: [
-    // Generate index.html in /dist => https://github.com/ampedandwired/html-webpack-plugin
+    //Generate index.html in /dist => https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      filename: 'index.html', // Name of file in ./dist/
-      template: 'index.html', // Name of template in ./src
-      hash: true
+      filename: 'index.html', //Name of file in ./dist/
+      template: 'index.html', //Name of template in ./src
+      hash: true,
     }),
-    new ExtractTextPlugin({
-      filename: '[chunkhash].[name].css',
-      disable: false,
-      allChunks: true,
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[id].css"
     }),
-  ]
-}
+  ],
+};
 ```
 
 - Let's create a subfolder called _src_.
@@ -260,6 +247,8 @@ module.exports = {
 - Let's create _main.tsx_ file (under src folder):
 
 - Let's create a basic _index.html_ file (under src folder):
+
+_./src/index.html_
 
 ```html
 <!DOCTYPE html>
@@ -286,16 +275,18 @@ module.exports = {
 .
 └── src/
     └── pages/
-		└── members/
-				├── index.ts
-				├── viewModel.ts
-				├── container.tsx
-				└── page.tsx
+		     └── members/
+				       ├── index.ts
+				       ├── viewModel.ts
+				       ├── container.tsx
+				       └── page.tsx
 	└── index.html
 	└── main.tsx
 ```
 
 - Let's add a basic "hello world" to our project. In _page.tsx_, add the following code:
+
+_./src/pages/members/page.tsx_
 
 ```javascript
 import * as React from 'react';
@@ -306,6 +297,8 @@ export const MemberListPage = () => (
 ```
 
 - Then, let's add our page to our container. To do so, _container.tsx_ should have:
+
+_./src/pages/members/container.tsx_
 
 ```javascript
 import * as React from 'react';
@@ -322,11 +315,15 @@ export class MemberListContainer extends React.Component<{}, {}> {
 
 - We want to use barrel, so let's export our component in _index.ts_:
 
+_./src/pages/members/index.ts_
+
 ```javascript
 export { MemberListContainer } from './container';
 ```
 
 - Finally, we will wire up our component in _main.tsx_ by using react-dom:
+
+_./src/main.tsx_
 
 ```javascript
 import * as React from 'react';
