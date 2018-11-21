@@ -62,14 +62,229 @@ export interface MemberEntity {
 	└── main.tsx
 ```
 
-- Let's create the component that will show a member's details in a row.
-    - The properties of our component will include just a member.
-    - Our component will return the HTML code that renders the member received in the properties argument.
-    - Therefore, we need to add the following code to our _memberRow.tsx_ file:
+- Let's add a container page that will take the responsiblity of loading data (right
+now harcoded), this container will instantiate the inner page.
 
-_./src/pages/members/components/memberRow.tsx_
+_./src/pages/members/container.tsx_
 
 ```javascript
+import * as React from 'react';
+import { MemberListPage } from './page';
+import { MemberEntity } from './viewModel';
+
+interface State {
+  memberList : MemberEntity[];  
+}
+
+export class MemberListContainer extends React.Component<{}, State> {
+ 
+   constructor(props) {
+     super(props);
+     this.state = { memberList: [] };
+   }
+
+   fetchMembers = () => {
+     setTimeout(() => {
+       this.setState({
+         memberList: [
+           {
+             id: 1,
+             name: 'John',
+             avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
+           },
+           {
+             id: 2,
+             name: 'Martin',
+             avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
+          },
+         ]
+       });
+     }, 500);
+   }
+
+   render() {
+     return (
+       <MemberListPage
+         memberList={this.state.memberList}
+         fetchMemberList={this.fetchMembers}
+       />
+     );
+   }
+}
+```
+
+- Now let's go to memberListPage we will:
+  - Call the _fetchMemberList_ on _ComponentDidMount_ life cycle event.
+  - Use the _memberList_ to display data in the component (right now we won't
+  take care of the layout of the component).
+
+_./src/pages/members/page.tsx_
+
+```diff
+import * as React from 'react';
++ import { MemberEntity } from './viewModel';
+
++ interface Props {
++   memberList: MemberEntity[];
++   fetchMemberList: () => void;
++ }
+
+
+- export const MemberListPage = () => (
+-  <h1>Hello from member list page</h1>
+- );
+
++ export class MemberListPage extends React.Component<Props, {}> {
++ 
++   componentDidMount() {
++     this.props.fetchMemberList();
++   }
++
++   render() {
++     return (
++      <>
++        {this.props.memberList.map((member) => 
++        <h1 key={member.id}>{member.name}</h1>
++        )}
++      </>
++     );
++   }
++ }
+
+```
+
+- Time to replace the component we are displaying in _main.tsx_ file
+(ensure we are pointing to the container in the _pages/members/index.ts_ barrel):
+
+_./src/main.tsx_
+
+```diff
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+
++ import { MemberListContainer } from './pages/members'; 
+
+ReactDOM.render(
++  <MemberListContainer />,
+  document.getElementById('root')
+);
+```
+
+- Hey! We got some results :-), let's start componentizing and creating the presentational 
+components for this page.
+
+- First of all the _page_ itself is doing too many things and on the other hand it
+could be likely that we could use memberlist table in other pages, let's apply create
+a _memberTable_ component.
+
+_./src/pages/members/components/memberTable.tsx_
+
+```tsx
+import * as React from 'react';
+import { MemberEntity } from '../viewModel';
+
+interface Props {
+  memberList : MemberEntity[];
+}
+
+export const MemberTable = (props : Props) => 
+      <>
+        {props.memberList.map((member) => 
+        <h1 key={member.id}>{member.name}</h1>
+        )}
+      </>
+```
+
+- Let's create a barrel under components to expose clearly which components are
+_"public"_
+
+_./src/components/index.ts_
+
+```typescript
+export * from './memberTable';
+```
+
+- Let's use this new component in our page.
+
+_./src/pages/members/page.tsx_
+
+```diff
+import * as React from 'react';
+import { MemberEntity } from './viewModel';
++ import { MemberTable } from './components'
+
+interface Props {
+  memberList: MemberEntity[];
+  fetchMemberList: () => void;
+}
+
+export class MemberListPage extends React.Component<Props, {}> {
+
+  componentDidMount() {
+    this.props.fetchMemberList();
+  }
+
+  render() {
+    return (
+      <>        
+-        {this.props.memberList.map((member) => 
+-        <h1 key={member.id}>{member.name}</h1>
++        <MemberTable memberList={this.props.memberList} />
+        )}
+      </>
+    );
+  }
+}
+```
+
+- Now it's time to focus on the layout, let's first try to create the table in one component:
+
+_./src/pages/members/components/memberTable.tsx_
+
+```diff
+import * as React from 'react';
+import { MemberEntity } from '../viewModel';
+
+interface Props {
+  memberList : MemberEntity[];
+}
+
+export const MemberTable = (props : Props) => 
+      <>
+-        {props.memberList.map((member) => 
+-        <h1 key={member.id}>{member.name}</h1>
+-         )}
++        <table className="table">
++          <thead>
++            <tr>
++              <th>Picture</th>
++              <th>Id</th>
++              <th>Name</th>
++            </tr>
++          </thead>
++          <tbody>
++            {
++              props.memberList.map(
++                (member) =>   
++                    <tr key={member.id}>
++                      <td><img src={member.avatarUrl} style={{ width: '200px' }} /></td>
++                      <td>{member.id}</td>
++                      <td>{member.name}</td>
++                    </tr>
++              )
++            }
++          </tbody>
++        </table>
+      </>
+```
+
+- Not bad we got a table component showing the results, but if we take a look to this component
+there's still room for improvement, the map to get the rows is a bit hard to read why not 
+encapsulate it in a new component?
+
+_./src/components/memberRow.tsx_
+
+```tsx
 import * as React from 'react';
 import { MemberEntity } from '../viewModel';
 
@@ -86,168 +301,50 @@ export const MemberRow = (props : Props) => (
 );
 ```
 
-- Now, let's create the component that will show the list of members. To do so, we need to import the MemberRow component into _memberTable.tsx_ and render it accordingly. In this case, the properties will be an array of members:
+> Side note here: we could encapsulate it and place it in the same file, room for discussion here.
+
+- And let's use this component in the _MemberTable_ component.
 
 _./src/pages/members/components/memberTable.tsx_
 
-```javascript
+```diff
 import * as React from 'react';
 import { MemberEntity } from '../viewModel';
-import { MemberRow } from './memberRow';
++ import { MemberRow } from './memberRow';
 
 interface Props {
   memberList : MemberEntity[];
 }
 
-export const MemberTable = (props : Props) => (
-  <table className="table">
-    <thead>
-      <tr>
-        <th>Picture</th>
-        <th>Id</th>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        props.memberList.map(
-          (member) => <MemberRow
-            key={member.id}
-            member={member}
-          />
-        )
-      }
-    </tbody>
-  </table>
-);
+export const MemberTable = (props : Props) => 
+      <>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Picture</th>
+              <th>Id</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              props.memberList.map(
+                (member) =>   
++                    <MemberRow key={member.id} member={member} />
+-                    <tr key={member.id}>
+-                      <td><img src={member.avatarUrl} style={{ width: '200px' }} /></td>
+-                      <td>{member.id}</td>
+-                      <td>{member.name}</td>
+-                    </tr>
+              )
+            }
+          </tbody>
+        </table>
+      </>
 ```
 
-- Now, let's use barrel and export MemberTable in _./src/pages/members/components/index.ts_:
-
-_./src/pages/members/components/index.ts
-
-```javascript
-export { MemberTable } from './memberTable';
-```
-
-- It's the moment to include our MemberTable in our _page.tsx_ component.
-    - We need to import MemberEntity.
-    - We need to define the properties: it will be the list of members.
-    - We need to convert the component from a function into a class.
-
-_./src/pages/members/page.tsx_
-
-```diff
-  import * as React from 'react';
-+ import { MemberEntity } from './viewModel';
-+ import { MemberTable } from './components';
-
-+ interface Props {
-+   memberList: MemberEntity[];
-+   fetchMemberList: () => void;
-+ }
-
-- export const MemberListPage = () => (
--   <h1>Hello from member list page</h1>
-- );
-
-+ export class MemberListPage extends React.Component<Props, {}> {
-+ 
-+   componentDidMount() {
-+     this.props.fetchMemberList();
-+   }
-+
-+   render() {
-+     return (
-+       <MemberTable
-+         memberList={this.props.memberList}
-+       />
-+     );
-+   }
-+ }
-
-```
-
-- Now, we have to modify _container.tsx_.
-    - We need to import MemberEntity.
-    - We need to define the State: it will be the list of members.
-    - We need to convert the component from a function into a class.
-
-_./src/pages/members/container.tsx_
-
-```diff
-  import * as React from 'react';
-  import { MemberListPage } from './page';
-+ import { MemberEntity } from './viewModel';
-
-+ interface State {
-+   memberList : MemberEntity[];
-+ }
-
-- export class MemberListContainer extends React.Component<{}, {}> {
--   render() {
--     return (
--       <MemberListPage/>
--     );
--   }
-- }
-
-+ export class MemberListContainer extends React.Component<{}, State> {
-+ 
-+   constructor(props) {
-+     super(props);
-+     this.state = { memberList: [] };
-+   }
-+   
-+   render() {
-+     return (
-+       <MemberListPage
-+         memberList={this.state.memberList}
-+       />
-+     );
-+   }
-+ }
-```
-
-- Now, what we need to do is to simulate how to get the list of members. As it should normally be an asynchronous call, we will use a timeout to return a list of hardcoded members in _container.tsx_.
-
-```diff
-  export class MemberListContainer extends React.Component<{}, State> {
-
-    constructor(props) {
-      super(props);
-      this.state = { memberList: [] };
-    }
-
-+   fetchMembers = () => {
-+     setTimeout(() => {
-+       this.setState({
-+         memberList: [
-+           {
-+             id: 1,
-+             name: 'John',
-+             avatarUrl: 'https://avatars1.githubusercontent.com/u/1457912?v=4',
-+           },
-+           {
-+             id: 2,
-+             name: 'Martin',
-+             avatarUrl: 'https://avatars2.githubusercontent.com/u/4374977?v=4',
-+          },
-+         ]
-+       });
-+     }, 500);
-+   }
-
-    render() {
-      return (
-        <MemberListPage
-          memberList={this.state.memberList}
-+         fetchMemberList={this.fetchMembers}
-        />
-      );
-    }
-  }
-```
+> Excercise: we could go one step further and encapsulate the headings in a subcomponent,
+makes sense?
 
 Now if you execute `npm start` and go to `http://localhost:8080/`, you will see the list of hardcoded members.
  

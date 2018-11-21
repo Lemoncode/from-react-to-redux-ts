@@ -8,6 +8,7 @@
     "sourceMap": true,
     "jsx": "react",
     "noLib": false,
+    "skipLibCheck": true,
     "suppressImplicitAnyIndexErrors": true
   },
   "compileOnSave": false,
