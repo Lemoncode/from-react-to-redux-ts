@@ -110,14 +110,6 @@ const parseJSON = (response : Response) : any => {
 
 ```
 
-- Let's create an index barrel to export the _fetchMemberList_ function.
-
-_./src/api/index.ts_
-
-```typescript
-export {fetchMemberList} from './memberApi'
-```
-
 - And finally, for each object in our data list (i.e. for each member in our members list), we will retrieve the three values we are interested in (using destructuring to make the code more concise), build a new object with these 3 values (using the short syntax for property assignment, i.e. `{id, login, avatar_url} equals {id:id, login:login, avatar_url:avatar_url})`), and finally we 'cast' our object into our api data model, as we do meet the required interface (types match). 
 
 ```javascript
@@ -129,6 +121,15 @@ const resolveMembers = (data : any) : MemberEntity[] => {
   return members;
 }
 ```
+
+- Let's create an index barrel to export the _fetchMemberList_ function.
+
+_./src/api/index.ts_
+
+```typescript
+export {fetchMemberList} from './memberApi'
+```
+
 
 - We have finished our API, now we need to do some changes on our container file and folder to properly expose the API to it.
 
