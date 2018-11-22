@@ -20,4 +20,3 @@ export const MemberListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(MemberListPage);
-

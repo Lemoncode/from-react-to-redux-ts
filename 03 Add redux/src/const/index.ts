@@ -1,1 +1,1 @@
-export { actionsDefs } from './actionsDefs';
+export * from './actionsDefs';

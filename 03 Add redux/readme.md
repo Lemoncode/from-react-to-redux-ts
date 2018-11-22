@@ -79,7 +79,7 @@ export const actionsDefs = {
   - We will use barrel to export our const in _index.ts_:
 
 ```javascript
-export { actionsDefs } from './actionsDefs';
+export * from './actionsDefs';
 ```
 
 - Next step is to add our actions. We will create two new files under _actions_ folder:
@@ -125,6 +125,8 @@ import { fetchMemberList } from '../api';
 
 - Again, we use barrel to export our action in _index.ts_:
 
+_./src/actions/index.ts_
+
 ```javascript
 export { fetchMemberListRequestStart } from './fetchMemberList';
 ```
@@ -138,6 +140,8 @@ export { fetchMemberListRequestStart } from './fetchMemberList';
 ```
 
   - In _memberListReducer.ts_ we will add our reducer. It will need the action definitions from _const_ folder as well as the member model. The reducer is splitted into a state, which is the list of members, and an action interface. The action object is composed of the name of the action (_type_ field) and the result of the action (_payload_ field). The type of the action is always necessary. _Payload_ field is optional and it is needed when the action modifies or returns data. So let's add them:
+
+_./src/reducers/memberListReducer.ts_
 
 ```javascript
 import { MemberEntity } from '../api/model';
@@ -157,6 +161,8 @@ interface BaseAction {
 ```
 
 - It is convenient to define a default state, that is represented by an empty list of members:
+
+_./src/reducers/memberListReducer.ts_
 
 ```diff
 import { MemberEntity } from '../api/model';
@@ -180,6 +186,8 @@ interface BaseAction {
 ```
 
 - The reducer is a function that receives a state and an action and returns a new state. Therefore, in our case, we need to check that the action type is correct and return the new state. As the state is inmutable, we create a new object with the member list received from the API:
+
+_./src/reducers/memberListReducer.ts_
 
 ```diff
 import { MemberEntity } from '../api/model';
@@ -219,7 +227,9 @@ const createDefaultState = () => ({
 + });
 ```
 
-  - Although we only have one reducer, we are going to use _combineReducers_ in _index.ts_ to transform an object with several reducers into a single reducer. This is convenient for large apps, but we will use it to show it. We need to import _combineReducers_ from redux and also the reducer and the state that we exported in _memberListReducer.ts_. Then, we will create the state, which contains the states of all our reducers, and the single reducer function which is the result of _combineReducers_.
+- Although we only have one reducer, we are going to use _combineReducers_ in _index.ts_ to transform an object with several reducers into a single reducer. This is convenient for large apps, but we will use it to show it. We need to import _combineReducers_ from redux and also the reducer and the state that we exported in _memberListReducer.ts_. Then, we will create the state, which contains the states of all our reducers, and the single reducer function which is the result of _combineReducers_.
+
+_./src/reducers/index.ts_
 
 ```javascript
 import { combineReducers } from 'redux';
@@ -286,7 +296,6 @@ import * as React from 'react';
 import { MemberListPage } from './page';
 import { MemberEntity } from './viewModel';
 - import { fetchMemberList } from '../../api';
-+ import * as memberApi from '../../api';
 import { mapMemberListFromModelToVm } from './mapper';
 + import { fetchMemberListRequestStart } from '../../actions';
 ```
@@ -345,6 +354,8 @@ import { mapMemberListFromModelToVm } from './mapper';
 
 - The final content of _container.tsx_ should be like below:
 
+**ALREADY PASTED, DO NOT COPY PASTE**
+
 ```javascript
 import * as React from 'react';
 import { connect } from 'react-redux';
@@ -382,6 +393,7 @@ import { MemberListContainer } from './pages/members';
 
 ReactDOM.render(
 -   <MemberListContainer />,
++   <Provider store={store}>
 +     <>
 +       <MemberListContainer />
 +     </>
