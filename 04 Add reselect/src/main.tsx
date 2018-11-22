@@ -4,12 +4,12 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 
 
-import { MemberListContainer } from './pages/members'; 
+import { MemberListContainer } from './pages/members';
 
 ReactDOM.render(
   <Provider store={store}>
     <>
-    <MemberListContainer />,
+      <MemberListContainer />
     </>
   </Provider>,
   document.getElementById('root')

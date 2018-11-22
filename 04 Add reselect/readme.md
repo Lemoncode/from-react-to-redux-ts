@@ -73,6 +73,8 @@ export const getMemberListReducer =
 
 - Let's change _container.tsx_ to use our selectors:
 
+_./src/pages/container.tsx_
+
 ```diff
 + import { getMemberList, getMemberListReducer } from '../../reducers/selectors';
 
@@ -85,6 +87,8 @@ const mapStateToProps = (state: State) => ({
 ```
 
 - However, we are using _getMemberList_ and _getMemberListReducer_ in _container.tsx_. This could be improved by using reselect. To do that, let's change _selectors.ts_:
+
+_./src/reducers/selector.tsx_
 
 ```diff
 + import { createSelector } from 'reselect';

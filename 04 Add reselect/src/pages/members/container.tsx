@@ -2,8 +2,8 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { State } from '../../reducers';
 import { MemberListPage } from './page';
-import { fetchMemberListRequestStart } from '../../actions';
 import { getMemberListVM } from './selectors';
+import { fetchMemberListRequestStart } from '../../actions';
 
 const mapStateToProps = (state: State) => ({
   // This mapping is necessary because we have two different ModelEntity interfaces with the same name.
@@ -19,4 +19,3 @@ export const MemberListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(MemberListPage);
-

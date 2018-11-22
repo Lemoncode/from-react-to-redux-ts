@@ -7,8 +7,7 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "jsx": "react",
-    "noLib": false,    
-    "skipLibCheck": true,
+    "noLib": false,
     "suppressImplicitAnyIndexErrors": true
   },
   "compileOnSave": false,
