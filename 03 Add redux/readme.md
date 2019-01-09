@@ -39,7 +39,7 @@ npm install redux react-redux --save
 - Let's install the type definitions for react-redux as well:
 
 ```
-npm install @types/react-redux --save-dev
+npm install @types/react-redux @types/node --save-dev
 ```
 
 - We will also need the middleware redux-thunk to handle the asynchronous call to the Rest API.
@@ -66,7 +66,9 @@ npm install redux-thunk --save
   └── actionsDefs.ts
 ```
 
-  - In _actionsDefs.ts_ we will have some string consts to identify our actions:
+- In _actionsDefs.ts_ we will have some string consts to identify our actions:
+
+_./const/actionsDefs.ts_
 
 ```javascript
 const prefix = 'MEMBERS_MODULE';
@@ -77,6 +79,8 @@ export const actionsDefs = {
 ```
 
   - We will use barrel to export our const in _index.ts_:
+
+_./const/index.ts_
 
 ```javascript
 export * from './actionsDefs';
@@ -383,6 +387,8 @@ export const MemberListContainer = connect(
 ```
 
 - Finally, _main.tsx_ has to be modified, because our container component needs to access the redux store. To do that, we will use the _Provider_ component, which allows all components to have access to the store (the store is injected into the context of every component).
+
+_./src/main.tsx_
 
 ```diff
 import * as React from 'react';

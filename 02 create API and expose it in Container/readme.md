@@ -67,7 +67,7 @@ _./src/api/memberApi.ts_
 import { MemberEntity } from './model';
 
 const baseRoot = 'https://api.github.com/orgs/lemoncode';
-const membersURL = `${baseRoot}/members`
+const membersURL = `${baseRoot}/members`;
 ```
 
 - We want to define a get/fetch REST call to retrieve our list of members from the server. In order to do this, we must send an aynchronous call to the server, using a Promise to store said data once it is available in our app. Thus, we define a `fetchMemberList` method that performs the aformentioned 'fetch' operation and parses the corresponding data, as follows: 
@@ -127,7 +127,7 @@ const resolveMembers = (data : any) : MemberEntity[] => {
 _./src/api/index.ts_
 
 ```typescript
-export {fetchMemberList} from './memberApi'
+export {fetchMemberList} from './memberApi';
 ```
 
 
